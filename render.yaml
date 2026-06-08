@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: ai-code-review-backend
+    env: python
+    region: oregon
+    plan: starter
+    branch: main
+    root: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GROQ_API_KEY
+        value: ""
+      - key: MONGODB_URL
+        value: ""
+      - key: GITHUB_TOKEN
+        value: ""
+      - key: GROQ_MODEL
+        value: "llama-3.3-70b-versatile"
+
+  - type: static
+    name: ai-code-review-frontend
+    env: static
+    region: oregon
+    plan: starter
+    branch: main
+    root: frontend
+    buildCommand: npm install && npm run build
+    publishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: ""
