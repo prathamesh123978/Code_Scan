@@ -24,5 +24,8 @@ coverage/
 *.env
 .env
 
+# Local backup directories
+backend-git-backup/
+
 # VS Code
 .vscode/
