@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-groq_api_key = os.getenv("GROQ_API_KEY")
+groq_api_key = os.getenv("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")
 if groq_api_key is None:
     raise RuntimeError("GROQ_API_KEY is not set in the environment")
 
