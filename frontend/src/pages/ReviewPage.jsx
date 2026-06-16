@@ -76,7 +76,7 @@ export default function ReviewPage() {
               value={prUrl}
               onChange={e => setPrUrl(e.target.value)}
             />
-            <p className={s.hint}>Requires GITHUB_TOKEN set in backend .env</p>
+
           </div>
         )}
 
