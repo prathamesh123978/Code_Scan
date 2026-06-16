@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const BASE = process.env.REACT_APP_API_URL || 'https://code-scan-backend-0zmj.onrender.com';
-
+const BASE = (process.env.REACT_APP_API_URL || 'https://code-scan-backend-0zmj.onrender.com') + '/api';
 const api = axios.create({ baseURL: BASE });
 
 export const reviewCode = (code, language = 'auto', filename = '') =>
