@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-groq_api_key = os.getenv("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")
+groq_api_key = os.getenv("GROQ_API_KEY")
 if groq_api_key is None:
     raise RuntimeError("GROQ_API_KEY is not set in the environment")
 
@@ -13,7 +13,6 @@ MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 
 def call_groq(prompt: str, system: str = None) -> str:
-    """Send a prompt to Groq and return the text response."""
     messages = []
     if system:
         messages.append({"role": "system", "content": system})

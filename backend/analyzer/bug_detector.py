@@ -1,14 +1,13 @@
 import json
+import logging
 from llm.groq_client import call_groq
 from llm.prompt_builder import build_review_prompt, build_system_prompt
 from analyzer.code_parser import chunk_code
 
+logger = logging.getLogger(__name__)
+
 
 def analyze_code(code: str, language: str = "auto") -> dict:
-    """
-    Run full AI review on the given code.
-    For large code, merge results from multiple chunks.
-    """
     chunks = chunk_code(code)
     all_bugs = []
     all_smells = []
@@ -45,22 +44,28 @@ def _review_chunk(code: str, language: str) -> dict:
     system = build_system_prompt()
     raw = call_groq(prompt, system)
 
-    # Strip any accidental markdown fences
-    raw = raw.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    raw = raw.strip().rstrip("```").strip()
+    # Strip markdown fences
+    cleaned = raw.strip()
+    if cleaned.startswith("```"):
+        parts = cleaned.split("```")
+        cleaned = parts[1] if len(parts) > 1 else cleaned
+        if cleaned.startswith("json"):
+            cleaned = cleaned[4:]
+    cleaned = cleaned.strip().rstrip("```").strip()
 
     try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        # ✅ Log the actual Groq response so you can debug
+        logger.error(f"JSON parse failed: {e}")
+        logger.error(f"Raw Groq response was:\n{raw}")
+        print(f"[DEBUG] Groq raw response:\n{raw}")  # visible in terminal immediately
+
         return {
             "bugs": [],
             "code_smells": [],
             "security_issues": [],
             "performance_issues": [],
             "quality_score": 50,
-            "summary": raw[:500],
+            "summary": f"Parse error – raw response: {raw[:300]}",
         }

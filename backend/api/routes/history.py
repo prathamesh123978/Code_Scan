@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter()
 
-# In-memory store — shared with review.py
 from api.routes.review import review_store
 
 @router.get("/history")
@@ -17,3 +16,11 @@ async def get_review(review_id: str):
     if review_id not in review_store:
         raise HTTPException(status_code=404, detail="Review not found")
     return review_store[review_id]
+
+
+@router.delete("/history/{review_id}")
+async def delete_review(review_id: str):
+    if review_id not in review_store:
+        raise HTTPException(status_code=404, detail="Review not found")
+    del review_store[review_id]
+    return {"deleted": True, "id": review_id}

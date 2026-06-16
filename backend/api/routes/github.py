@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from api.models import GithubReviewRequest
 from git.github_client import fetch_pr_files
-from git.diff_parser import extract_added_lines
 from analyzer.bug_detector import analyze_code
 from analyzer.code_parser import detect_language
 from database.connection import get_db
@@ -17,22 +16,32 @@ async def review_github_pr(request: GithubReviewRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to fetch PR: {str(e)}")
 
+    print(f"[DEBUG] Total files fetched: {len(files)}")
+
     if not files:
         raise HTTPException(status_code=404, detail="No reviewable files found in PR")
 
     all_results = []
 
     for f in files:
-        code = extract_added_lines(f["content"])
+        code = f["content"]
+        print(f"[DEBUG] File: {f['filename']}")
+        print(f"[DEBUG] Code length: {len(code)}")
+        print(f"[DEBUG] Code preview:\n{code[:500]}")
+
         if not code.strip():
+            print("[DEBUG] Skipping — empty code")
             continue
 
         language = detect_language(f["filename"])
+        print(f"[DEBUG] Language: {language}")
+
         result = analyze_code(code, language)
+        print(f"[DEBUG] Result: {result}")
+
         result["filename"] = f["filename"]
         all_results.append(result)
 
-        # Save each file's review
         try:
             db = get_db()
             if db is not None:
@@ -43,4 +52,5 @@ async def review_github_pr(request: GithubReviewRequest):
         except Exception:
             pass
 
+    print(f"[DEBUG] all_results: {all_results}")
     return {"pr_url": request.pr_url, "files_reviewed": len(all_results), "results": all_results}

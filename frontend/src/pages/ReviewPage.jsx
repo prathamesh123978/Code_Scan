@@ -28,9 +28,26 @@ export default function ReviewPage() {
     setLoading(true);
     setResult(null);
     try {
-      const data = tab === 'paste'
+      let data = tab === 'paste'
         ? await reviewCode(code, language)
         : await reviewGithub(prUrl);
+
+      // ✅ GitHub returns { results: [...] }, merge all files into one flat result
+      if (tab === 'github' && data.results) {
+        data = {
+          bugs:               data.results.flatMap(r => r.bugs || []),
+          code_smells:        data.results.flatMap(r => r.code_smells || []),
+          security_issues:    data.results.flatMap(r => r.security_issues || []),
+          performance_issues: data.results.flatMap(r => r.performance_issues || []),
+          quality_score: Math.round(
+            data.results.reduce((sum, r) => sum + (r.quality_score || 50), 0) / data.results.length
+          ),
+          summary: data.results
+            .map(r => `[${r.filename}] ${r.summary || ''}`)
+            .join(' | '),
+        };
+      }
+
       setResult(data);
       toast.success('Review complete!');
     } catch (e) {
@@ -51,7 +68,11 @@ export default function ReviewPage() {
       <div className={s.left}>
         <div className={s.tabs}>
           {TABS.map(t => (
-            <button key={t.id} className={`${s.tab} ${tab === t.id ? s.activeTab : ''}`} onClick={() => setTab(t.id)}>
+            <button
+              key={t.id}
+              className={`${s.tab} ${tab === t.id ? s.activeTab : ''}`}
+              onClick={() => setTab(t.id)}
+            >
               {t.label}
             </button>
           ))}
@@ -76,7 +97,6 @@ export default function ReviewPage() {
               value={prUrl}
               onChange={e => setPrUrl(e.target.value)}
             />
-
           </div>
         )}
 
@@ -118,10 +138,10 @@ export default function ReviewPage() {
 
             <div className={s.statsRow}>
               {[
-                { label: 'Bugs',        count: result.bugs?.length,              color: 'var(--danger)'  },
-                { label: 'Smells',      count: result.code_smells?.length,       color: 'var(--warn)'    },
-                { label: 'Security',    count: result.security_issues?.length,   color: 'var(--accent2)' },
-                { label: 'Performance', count: result.performance_issues?.length, color: 'var(--info)'   },
+                { label: 'Bugs',        count: result.bugs?.length,               color: 'var(--danger)'  },
+                { label: 'Smells',      count: result.code_smells?.length,        color: 'var(--warn)'    },
+                { label: 'Security',    count: result.security_issues?.length,    color: 'var(--accent2)' },
+                { label: 'Performance', count: result.performance_issues?.length, color: 'var(--info)'    },
               ].map(st => (
                 <div key={st.label} className={s.stat}>
                   <span className={s.statNum} style={{ color: st.color }}>{st.count || 0}</span>
@@ -134,10 +154,10 @@ export default function ReviewPage() {
               <div className={s.allGood}>✅ No issues found — great code!</div>
             )}
 
-            {result.bugs?.map((item, i) => <ReviewCard key={i} type="bug" item={item} />)}
-            {result.security_issues?.map((item, i) => <ReviewCard key={i} type="security" item={item} />)}
-            {result.code_smells?.map((item, i) => <ReviewCard key={i} type="smell" item={item} />)}
-            {result.performance_issues?.map((item, i) => <ReviewCard key={i} type="perf" item={item} />)}
+            {result.bugs?.map((item, i)               => <ReviewCard key={i} type="bug"      item={item} />)}
+            {result.security_issues?.map((item, i)    => <ReviewCard key={i} type="security" item={item} />)}
+            {result.code_smells?.map((item, i)        => <ReviewCard key={i} type="smell"    item={item} />)}
+            {result.performance_issues?.map((item, i) => <ReviewCard key={i} type="perf"     item={item} />)}
           </div>
         )}
       </div>

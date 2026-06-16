@@ -15,3 +15,7 @@ export const getHistory = (limit = 20) =>
 
 export const getReview = (id) =>
   api.get(`/history/${id}`).then(r => r.data);
+
+// ✅ new
+export const deleteReview = (id) =>
+  api.delete(`/history/${id}`).then(r => r.data);

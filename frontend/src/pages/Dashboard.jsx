@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getHistory, getReview } from '../utils/api';
+import { getHistory, getReview, deleteReview } from '../utils/api';
 import ReviewCard from '../components/ReviewCard';
 import ScoreBar from '../components/ScoreBar';
 import s from './Dashboard.module.css';
@@ -33,8 +33,23 @@ export default function Dashboard() {
     }
   }
 
-  const scoreColor = (s) =>
-    s >= 80 ? 'var(--accent)' : s >= 50 ? 'var(--warn)' : 'var(--danger)';
+  // ✅ new
+  async function handleDelete(e, id) {
+    e.stopPropagation(); // don't open the detail panel
+    try {
+      await deleteReview(id);
+      setReviews(prev => prev.filter(r => r.id !== id));
+      if (selected === id) {
+        setSelected(null);
+        setDetail(null);
+      }
+    } catch {
+      alert('Failed to delete review');
+    }
+  }
+
+  const scoreColor = (sc) =>
+    sc >= 80 ? 'var(--accent)' : sc >= 50 ? 'var(--warn)' : 'var(--danger)';
 
   return (
     <div className={s.page}>
@@ -58,9 +73,28 @@ export default function Dashboard() {
           >
             <div className={s.itemTop}>
               <span className={s.lang}>{r.language || 'Unknown'}</span>
-              <span className={s.itemScore} style={{ color: scoreColor(r.quality_score) }}>
-                {r.quality_score}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className={s.itemScore} style={{ color: scoreColor(r.quality_score) }}>
+                  {r.quality_score}
+                </span>
+                {/* ✅ Delete button */}
+                <button
+                  onClick={(e) => handleDelete(e, r.id)}
+                  title="Delete review"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--danger)',
+                    fontSize: '14px',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    lineHeight: 1,
+                  }}
+                >
+                  🗑
+                </button>
+              </div>
             </div>
             <div className={s.itemSummary}>{r.summary?.slice(0, 80) || '—'}{r.summary?.length > 80 ? '…' : ''}</div>
             <div className={s.itemDate}>{formatDate(r.created_at)}</div>
