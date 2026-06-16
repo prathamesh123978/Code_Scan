@@ -10,11 +10,11 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: GROQ_API_KEY
-        value: ""
+        value: "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"
       - key: MONGODB_URL
-        value: ""
+        value: "mongodb+srv://admin:admin1234@cluster0.zr9sybl.mongodb.net/?appName=Cluster0"
       - key: GITHUB_TOKEN
-        value: ""
+        value: "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"
       - key: GROQ_MODEL
         value: "llama-3.3-70b-versatile"
 
@@ -28,5 +28,5 @@ services:
     buildCommand: npm install && npm run build
     publishPath: build
     envVars:
-      - key: REACT_APP_API_URL
+      - key: https://code-scan-backend-0zmj.onrender.com
         value: ""
