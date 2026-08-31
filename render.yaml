@@ -10,7 +10,7 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: GROQ_API_KEY
-        value: "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"
+        value: "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"
       - key: MONGODB_URL
         value: "mongodb+srv://admin:admin1234@cluster0.zr9sybl.mongodb.net/?appName=Cluster0"
       - key: GITHUB_TOKEN
